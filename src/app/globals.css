@@ -421,3 +421,72 @@
     display: none !important;
   }
 }
+
+/* ------------------------------------------------------------------------- *
+ * Deep-link splash
+ *
+ * Only ever visible while <DeepLinkResolver> replays a path that Catalyst Slate
+ * answered with the root document. Deliberately plain CSS so it works before any
+ * JS bundle has executed.
+ * ------------------------------------------------------------------------- */
+#deeplink-splash {
+  display: none;
+}
+
+html[data-deeplink] #deeplink-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  background-color: var(--canvas);
+}
+
+html[data-deeplink] #app-root {
+  visibility: hidden;
+}
+
+.deeplink-splash__mark {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.375rem;
+  height: 2.25rem;
+}
+
+.deeplink-splash__mark > span {
+  display: block;
+  width: 0.4375rem;
+  border-radius: 999px;
+  background-color: var(--brand);
+  animation: deeplink-bar 1s ease-in-out infinite;
+}
+
+.deeplink-splash__mark > span:nth-child(1) {
+  height: 40%;
+}
+.deeplink-splash__mark > span:nth-child(2) {
+  height: 68%;
+  animation-delay: 0.12s;
+}
+.deeplink-splash__mark > span:nth-child(3) {
+  height: 100%;
+  animation-delay: 0.24s;
+}
+
+@keyframes deeplink-bar {
+  0%,
+  100% {
+    transform: scaleY(0.55);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deeplink-splash__mark > span {
+    animation: none;
+  }
+}

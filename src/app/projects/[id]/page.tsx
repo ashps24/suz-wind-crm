@@ -1,7 +1,12 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { getProject } from '@/lib/mocks/projects'
+import { projects } from '@/lib/mocks/projects'
 import { ProjectWorkspace } from './workspace'
+
+export function generateStaticParams() {
+  return projects.map((record) => ({ id: record.id }))
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params

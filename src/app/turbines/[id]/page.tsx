@@ -1,7 +1,12 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { getTurbine } from '@/lib/mocks/fleet'
+import { turbines } from '@/lib/mocks/fleet'
 import { TurbineTwin } from './turbine-twin'
+
+export function generateStaticParams() {
+  return turbines.map((record) => ({ id: record.id }))
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params

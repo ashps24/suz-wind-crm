@@ -1,6 +1,11 @@
 import type { Metadata } from 'next'
 import { getWorkOrder } from '@/lib/mocks/maintenance'
+import { workOrders } from '@/lib/mocks/maintenance'
 import { WorkOrderDetail } from './work-order-detail'
+
+export function generateStaticParams() {
+  return workOrders.map((record) => ({ id: record.id }))
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params

@@ -1,7 +1,12 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { getAccount } from '@/lib/mocks/crm'
+import { accounts } from '@/lib/mocks/crm'
 import { AccountWorkspace } from './workspace'
+
+export function generateStaticParams() {
+  return accounts.map((record) => ({ id: record.id }))
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params
