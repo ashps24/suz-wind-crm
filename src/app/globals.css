@@ -1,0 +1,423 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ------------------------------------------------------------------------- *
+ * Suzlon Wind CRM — design tokens
+ *
+ * Data-viz palette is the validated reference instance (see lib/constants).
+ * Light categorical worst adjacent CVD ΔE 9.1 / normal-vision 19.6 on surface
+ * #fbfcfd; dark worst adjacent CVD ΔE 8.4 / normal-vision 19.3 on #101720.
+ * Status hues are reserved and always ship with an icon or label.
+ * ------------------------------------------------------------------------- */
+
+:root {
+  color-scheme: light;
+
+  /* Planes */
+  --canvas: #f4f6f9;
+  --surface: #fbfcfd;
+  --elevated: #ffffff;
+  --subtle: #eef1f5;
+  --inset: #e8ecf1;
+
+  /* Ink */
+  --ink: #0b121c;
+  --ink-secondary: #4a5563;
+  --ink-muted: #79838f;
+  --ink-inverted: #fbfcfd;
+
+  /* Lines */
+  --line: rgb(11 18 28 / 0.09);
+  --line-strong: rgb(11 18 28 / 0.16);
+  --grid: #e3e8ee;
+  --axis: #c6ced8;
+
+  /* Brand */
+  --brand: #2a78d6;
+  --brand-hover: #256abf;
+  --brand-soft: #e7f0fc;
+  --brand-ink: #184f95;
+
+  /* Reserved status (never used as a series colour) */
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-serious: #ec835a;
+  --status-critical: #d03b3b;
+  --status-neutral: #79838f;
+  --status-info: #2a78d6;
+
+  --status-good-soft: #e4f5e4;
+  --status-warning-soft: #fdf3dd;
+  --status-serious-soft: #fbeae2;
+  --status-critical-soft: #f9e5e5;
+  --status-neutral-soft: #eef1f5;
+  --status-info-soft: #e7f0fc;
+
+  /* Categorical series (fixed order, never cycled) */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-6: #008300;
+  --series-7: #4a3aa7;
+  --series-8: #e34948;
+
+  /* Sequential blue ramp, light → dark */
+  --seq-100: #cde2fb;
+  --seq-200: #9ec5f4;
+  --seq-300: #6da7ec;
+  --seq-400: #3987e5;
+  --seq-500: #256abf;
+  --seq-600: #184f95;
+  --seq-700: #0d366b;
+
+  /* Success delta text (WCAG-safe against light surface) */
+  --delta-up: #006300;
+  --delta-down: #b32d2d;
+
+  /* Geospatial canvas */
+  --map-water: #d6e2ee;
+  --map-land: #f8fafc;
+  --map-land-alt: #eaf0f6;
+  --map-border: #a9b8c8;
+  --map-graticule: rgb(11 18 28 / 0.045);
+
+  /* Depth */
+  --shadow-sm: 0 1px 2px rgb(11 18 28 / 0.05), 0 1px 1px rgb(11 18 28 / 0.03);
+  --shadow-md: 0 4px 12px -2px rgb(11 18 28 / 0.08), 0 2px 4px -2px rgb(11 18 28 / 0.05);
+  --shadow-lg: 0 16px 40px -12px rgb(11 18 28 / 0.16), 0 4px 12px -4px rgb(11 18 28 / 0.07);
+  --shadow-xl: 0 32px 64px -20px rgb(11 18 28 / 0.22), 0 8px 20px -8px rgb(11 18 28 / 0.1);
+
+  --glass: rgb(251 252 253 / 0.82);
+  --glass-line: rgb(11 18 28 / 0.08);
+}
+
+.dark {
+  color-scheme: dark;
+
+  --canvas: #080c12;
+  --surface: #101720;
+  --elevated: #17212d;
+  --subtle: #1b2733;
+  --inset: #0c1219;
+
+  --ink: #eef4fa;
+  --ink-secondary: #a3b3c4;
+  --ink-muted: #71818f;
+  --ink-inverted: #080c12;
+
+  --line: rgb(255 255 255 / 0.09);
+  --line-strong: rgb(255 255 255 / 0.16);
+  --grid: #1e2a37;
+  --axis: #2f3d4c;
+
+  --brand: #3987e5;
+  --brand-hover: #5598e7;
+  --brand-soft: rgb(57 135 229 / 0.14);
+  --brand-ink: #9ec5f4;
+
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-serious: #ec835a;
+  --status-critical: #d03b3b;
+  --status-neutral: #71818f;
+  --status-info: #3987e5;
+
+  --status-good-soft: rgb(12 163 12 / 0.16);
+  --status-warning-soft: rgb(250 178 25 / 0.16);
+  --status-serious-soft: rgb(236 131 90 / 0.16);
+  --status-critical-soft: rgb(208 59 59 / 0.2);
+  --status-neutral-soft: rgb(255 255 255 / 0.07);
+  --status-info-soft: rgb(57 135 229 / 0.16);
+
+  /* Same eight hues, stepped for the dark surface — not an inversion */
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #008300;
+  --series-7: #9085e9;
+  --series-8: #e66767;
+
+  --seq-100: #0d366b;
+  --seq-200: #184f95;
+  --seq-300: #256abf;
+  --seq-400: #2a78d6;
+  --seq-500: #3987e5;
+  --seq-600: #6da7ec;
+  --seq-700: #9ec5f4;
+
+  --delta-up: #0ca30c;
+  --delta-down: #e66767;
+
+  --map-water: #070d14;
+  --map-land: #17222f;
+  --map-land-alt: #1c2a38;
+  --map-border: #3d5470;
+  --map-graticule: rgb(255 255 255 / 0.04);
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 16px 40px -12px rgb(0 0 0 / 0.65), 0 4px 12px -4px rgb(0 0 0 / 0.45);
+  --shadow-xl: 0 32px 64px -20px rgb(0 0 0 / 0.8), 0 8px 20px -8px rgb(0 0 0 / 0.5);
+
+  --glass: rgb(16 23 32 / 0.82);
+  --glass-line: rgb(255 255 255 / 0.08);
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-elevated: var(--elevated);
+  --color-subtle: var(--subtle);
+  --color-inset: var(--inset);
+
+  --color-ink: var(--ink);
+  --color-ink-secondary: var(--ink-secondary);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-inverted: var(--ink-inverted);
+
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-grid: var(--grid);
+  --color-axis: var(--axis);
+
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-ink: var(--brand-ink);
+
+  --color-good: var(--status-good);
+  --color-warning: var(--status-warning);
+  --color-serious: var(--status-serious);
+  --color-critical: var(--status-critical);
+  --color-neutral: var(--status-neutral);
+  --color-info: var(--status-info);
+
+  --color-good-soft: var(--status-good-soft);
+  --color-warning-soft: var(--status-warning-soft);
+  --color-serious-soft: var(--status-serious-soft);
+  --color-critical-soft: var(--status-critical-soft);
+  --color-neutral-soft: var(--status-neutral-soft);
+  --color-info-soft: var(--status-info-soft);
+
+  --color-series-1: var(--series-1);
+  --color-series-2: var(--series-2);
+  --color-series-3: var(--series-3);
+  --color-series-4: var(--series-4);
+  --color-series-5: var(--series-5);
+  --color-series-6: var(--series-6);
+  --color-series-7: var(--series-7);
+  --color-series-8: var(--series-8);
+
+  --color-map-water: var(--map-water);
+  --color-map-land: var(--map-land);
+  --color-map-land-alt: var(--map-land-alt);
+  --color-map-border: var(--map-border);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
+
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+
+  --radius-panel: 14px;
+  --radius-card: 12px;
+
+  --animate-shimmer: shimmer 1.9s ease-in-out infinite;
+  --animate-pulse-once: pulse-once 1.4s cubic-bezier(0.4, 0, 0.2, 1) 2;
+  --animate-sweep: sweep 4.5s linear infinite;
+  --animate-breathe: breathe 3.2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+@keyframes pulse-once {
+  0% {
+    box-shadow: 0 0 0 0 var(--status-critical-soft);
+  }
+  70% {
+    box-shadow: 0 0 0 10px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@keyframes sweep {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(1.14);
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--line);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    background-color: var(--canvas);
+    color: var(--ink);
+    font-feature-settings: 'cv11', 'ss01';
+    font-variation-settings: 'opsz' 32;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overscroll-behavior-y: none;
+  }
+
+  ::selection {
+    background-color: var(--brand-soft);
+    color: var(--brand-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Numbers in tables, axes and KPI rails align vertically */
+  .tabular,
+  th,
+  td,
+  .kpi-value {
+    font-variant-numeric: tabular-nums;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    letter-spacing: -0.018em;
+    text-wrap: balance;
+  }
+}
+
+@layer utilities {
+  .panel {
+    background-color: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-panel);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .panel-flat {
+    background-color: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-panel);
+  }
+
+  .glass {
+    background-color: var(--glass);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--glass-line);
+  }
+
+  .hairline {
+    border-color: var(--line);
+  }
+
+  .text-gradient {
+    background: linear-gradient(103deg, var(--ink) 20%, var(--brand) 130%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--axis) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: var(--axis);
+    border-radius: 99px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Texture channel — the accessibility fallback for CVD / print / forced colours */
+  .texture-45 {
+    background-image: repeating-linear-gradient(
+      45deg,
+      currentColor 0 1px,
+      transparent 1px 5px
+    );
+  }
+  .texture-135 {
+    background-image: repeating-linear-gradient(
+      135deg,
+      currentColor 0 1px,
+      transparent 1px 5px
+    );
+  }
+
+  .grid-fade {
+    mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}

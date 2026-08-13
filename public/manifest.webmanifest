@@ -1,0 +1,12 @@
+{
+  "name": "Suzlon Wind CRM",
+  "short_name": "Wind CRM",
+  "description": "AI-powered renewable energy operations platform",
+  "start_url": "/command-center",
+  "display": "standalone",
+  "background_color": "#080c12",
+  "theme_color": "#2a78d6",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
