@@ -35,6 +35,7 @@ import { api } from '@/lib/api'
 import { documentCategories } from '@/lib/mocks/documents'
 import { fmtDate, fmtFileSize, fmtNumber, fmtRelative } from '@/lib/formatters'
 import type { DocumentRecord } from '@/types'
+import { turbineHref, windFarmHref } from '@/lib/routing'
 
 const FILE_ICON: Record<DocumentRecord['fileType'], Icon> = {
   pdf: FilePdf,
@@ -62,8 +63,8 @@ const RELATED_ICON: Record<DocumentRecord['relatedTo']['kind'], Icon> = {
 }
 
 const RELATED_HREF: Record<DocumentRecord['relatedTo']['kind'], (id: string) => string> = {
-  'wind-farm': (id) => `/wind-farms/${id}`,
-  turbine: (id) => `/turbines/${id}`,
+  'wind-farm': (id) => windFarmHref(id),
+  turbine: (id) => turbineHref(id),
   project: (id) => `/projects/${id}`,
   account: (id) => `/crm/accounts/${id}`,
 }

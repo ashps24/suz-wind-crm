@@ -46,6 +46,7 @@ import {
 } from '@/lib/formatters'
 import { daysAgo } from '@/lib/utils'
 import type { Turbine, WorkOrder } from '@/types'
+import { turbineHref } from '@/lib/routing'
 
 const TABS = [
   { value: 'overview', label: 'Overview' },
@@ -336,7 +337,7 @@ export function WindFarmWorkspace({ id }: { id: string }) {
                     {alarms.data!.slice(0, 6).map((alarm) => (
                       <li key={alarm.id}>
                         <Link
-                          href={`/turbines/${alarm.turbineId}?tab=alarms`}
+                          href={turbineHref(alarm.turbineId, { tab: 'alarms' })}
                           className="flex items-start gap-3 rounded-lg border border-[var(--line)] bg-[var(--elevated)] px-3 py-2.5 transition-colors hover:border-[var(--line-strong)]"
                         >
                           <Warning className="mt-0.5 size-4 shrink-0" style={{ color: TONE_VAR.serious }} aria-hidden />
@@ -420,7 +421,7 @@ export function WindFarmWorkspace({ id }: { id: string }) {
                   workOrders={workOrders.data ?? []}
                   technicians={siteTechs.filter((t) => t.status === 'on-site')}
                   weather={siteWeather}
-                  onSelectTurbine={(tid) => router.push(`/turbines/${tid}`)}
+                  onSelectTurbine={(tid) => router.push(turbineHref(tid))}
                 />
               )}
             </div>
@@ -830,7 +831,7 @@ function TurbineTable({
       rows={turbines}
       columns={columns}
       rowKey={(t) => t.id}
-      href={(t) => `/turbines/${t.id}`}
+      href={(t) => turbineHref(t.id)}
       caption="Turbines at this wind farm"
       defaultSort={{ key: 'health', dir: 'asc' }}
       maxHeight={maxHeight}

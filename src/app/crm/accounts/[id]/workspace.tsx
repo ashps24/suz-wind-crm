@@ -39,6 +39,7 @@ import { api } from '@/lib/api'
 import { OPPORTUNITY_STAGES, TONE_VAR } from '@/lib/constants'
 import { fmtCrore, fmtDate, fmtMw, fmtNumber, fmtPct, fmtRelative } from '@/lib/formatters'
 import { sum } from '@/lib/utils'
+import { turbineHref, windFarmHref } from '@/lib/routing'
 
 const TABS = [
   { value: 'overview', label: 'Overview' },
@@ -340,7 +341,7 @@ export function AccountWorkspace({ id }: { id: string }) {
             <DataTable
               rows={accountFarms}
               rowKey={(f) => f.id}
-              href={(f) => `/wind-farms/${f.id}`}
+              href={(f) => windFarmHref(f.id)}
               caption="Wind farms owned by this customer"
               defaultSort={{ key: 'mw', dir: 'desc' }}
               columns={[
@@ -363,7 +364,7 @@ export function AccountWorkspace({ id }: { id: string }) {
             <DataTable
               rows={accountTurbines}
               rowKey={(t) => t.id}
-              href={(t) => `/turbines/${t.id}`}
+              href={(t) => turbineHref(t.id)}
               caption="Turbines owned by this customer"
               maxHeight={620}
               defaultSort={{ key: 'health', dir: 'asc' }}

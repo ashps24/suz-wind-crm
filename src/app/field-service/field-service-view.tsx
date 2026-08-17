@@ -49,6 +49,7 @@ import { fmtDate, fmtDuration, fmtRelative, fmtSpeed, fmtTime, isOverdue, isToda
 import { useIsMobile } from '@/hooks'
 import { cn } from '@/lib/utils'
 import type { Technician, WorkOrder } from '@/types'
+import { turbineHref } from '@/lib/routing'
 
 const JOB_STEPS = [
   { key: 'review', label: 'Review turbine context', icon: Wind },
@@ -441,7 +442,7 @@ function JobFlow({
               </dl>
             </Card>
             <Button variant="secondary" size="sm" className="w-full" asChild>
-              <Link href={`/turbines/${order.turbineId}`}>
+              <Link href={turbineHref(order.turbineId)}>
                 <Wind aria-hidden />
                 Open turbine digital twin
               </Link>

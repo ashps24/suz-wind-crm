@@ -19,6 +19,8 @@ import { api } from '@/lib/api'
 import { fmtMw, fmtMwh, fmtNumber, fmtPct, fmtSpeed } from '@/lib/formatters'
 import { sum } from '@/lib/utils'
 import type { WindFarm } from '@/types'
+import { windFarmHref } from '@/lib/routing'
+import { NewWindFarmButton } from './new-wind-farm'
 
 const STATE_OPTIONS = [
   'Gujarat', 'Tamil Nadu', 'Rajasthan', 'Maharashtra', 'Karnataka', 'Madhya Pradesh', 'Andhra Pradesh',
@@ -144,14 +146,17 @@ export function WindFarmsView() {
       description="Every site Suzlon operates or is building, with live generation, availability and risk posture."
       wide
       actions={
-        <ViewToggle
-          value={view}
-          onChange={setView}
-          options={[
-            { value: 'cards', label: 'Cards', icon: <Cards className="size-4" aria-hidden /> },
-            { value: 'table', label: 'Table', icon: <TableIcon className="size-4" aria-hidden /> },
-          ]}
-        />
+        <div className="flex items-center gap-2">
+          <ViewToggle
+            value={view}
+            onChange={setView}
+            options={[
+              { value: 'cards', label: 'Cards', icon: <Cards className="size-4" aria-hidden /> },
+              { value: 'table', label: 'Table', icon: <TableIcon className="size-4" aria-hidden /> },
+            ]}
+          />
+          <NewWindFarmButton />
+        </div>
       }
     >
       <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -249,7 +254,7 @@ export function WindFarmsView() {
               rows={filtered}
               columns={columns}
               rowKey={(r) => r.id}
-              href={(r) => `/wind-farms/${r.id}`}
+              href={(r) => windFarmHref(r.id)}
               caption="Wind farms with capacity, availability, generation and risk"
               defaultSort={{ key: 'risk', dir: 'desc' }}
             />
@@ -268,7 +273,7 @@ function WindFarmCard({ farm, index }: { farm: WindFarm; index: number }) {
       transition={{ duration: 0.24, delay: Math.min(index * 0.03, 0.24), ease: [0.22, 1, 0.36, 1] }}
     >
       <Link
-        href={`/wind-farms/${farm.id}`}
+        href={windFarmHref(farm.id)}
         className="panel group block overflow-hidden transition-shadow hover:shadow-[var(--shadow-lg)]"
       >
         <div className="relative h-32">

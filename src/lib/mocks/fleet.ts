@@ -439,7 +439,7 @@ function boundaryFor(seed: SiteSeed, siteTurbines: Turbine[]): GeoPoint[] {
   })
 }
 
-export const windFarms: WindFarm[] = SITE_SEEDS.map((seed) => {
+function buildWindFarm(seed: SiteSeed): WindFarm {
   const rng = seededRandom(`site:${seed.id}`)
   const siteTurbines = getTurbinesForSite(seed.id)
   const installedMw = Math.round(sum(siteTurbines.map((t) => t.capacityMw)) * 10) / 10
@@ -495,7 +495,9 @@ export const windFarms: WindFarm[] = SITE_SEEDS.map((seed) => {
     generation24h,
     availability30d,
   }
-})
+}
+
+export const windFarms: WindFarm[] = SITE_SEEDS.map(buildWindFarm)
 
 const windFarmById = new Map(windFarms.map((w) => [w.id, w]))
 export function getWindFarm(id: string) {
@@ -504,9 +506,10 @@ export function getWindFarm(id: string) {
 
 /* ----------------------------------- Alarms ----------------------------------- */
 
-export const alarms: Alarm[] = turbines
-  .filter((t) => t.activeAlarm)
-  .map((t, i) => {
+function buildAlarms(fromTurbines: Turbine[]): Alarm[] {
+  return fromTurbines
+    .filter((t) => t.activeAlarm)
+    .map((t, i) => {
     const rng = seededRandom(`alarm:${t.id}`)
     const code = t.activeAlarm!.split(' · ')[0] as string
     const entry = ALARM_CATALOGUE.find((a) => a.code === code) ?? ALARM_CATALOGUE[0]!
@@ -528,6 +531,9 @@ export const alarms: Alarm[] = turbines
       downtimeMinutes: t.status === 'offline' ? raisedMinutes : Math.round(raisedMinutes * 0.22),
     } satisfies Alarm
   })
+}
+
+export const alarms: Alarm[] = buildAlarms(turbines)
 
 export function getAlarmsForSite(siteId: string) {
   return alarms.filter((a) => a.windFarmId === siteId)
@@ -690,3 +696,61 @@ export const fleetTotals = {
 
 export { ALARM_CATALOGUE, powerAt, STATE_CODE }
 export type { SiteSeed }
+
+/* --------------------------------- Live rebuild --------------------------------- */
+
+type FleetRebuildHook = () => void
+const rebuildHooks: FleetRebuildHook[] = []
+
+/**
+ * Registers a callback for when the fleet is rebuilt from live site records.
+ * Modules that snapshot fleet data at load (Command Center KPIs) use this to
+ * recompute; modules that read the exported arrays at call time need nothing.
+ */
+export function onFleetRebuild(hook: FleetRebuildHook) {
+  rebuildHooks.push(hook)
+}
+
+/** The site ids compiled into this build. Anything else was created at runtime. */
+export const SEED_SITE_IDS: ReadonlySet<string> = new Set(SITE_SEEDS.map((s) => s.id))
+
+/**
+ * Rebuilds every derived structure from a live set of site records, mutating
+ * the exported arrays and maps IN PLACE so the thousands of references held
+ * across the app stay valid. Generation is seeded by site id, so the fifteen
+ * bundled sites come out byte-identical to the static build — only sites that
+ * were added, edited or removed in the Data Store actually change.
+ *
+ * Deliberately derived, not fetched: turbines, alarms and telemetry remain
+ * synthetic. A site row is the single unit of truth.
+ */
+export function applyLiveSites(seeds: SiteSeed[]) {
+  if (!seeds.length) return
+
+  turbines.length = 0
+  turbines.push(...seeds.flatMap(buildTurbinesForSite))
+
+  turbineById.clear()
+  turbinesBySite.clear()
+  for (const t of turbines) {
+    turbineById.set(t.id, t)
+    const list = turbinesBySite.get(t.windFarmId) ?? []
+    list.push(t)
+    turbinesBySite.set(t.windFarmId, list)
+  }
+
+  windFarms.length = 0
+  windFarms.push(...seeds.map(buildWindFarm))
+  windFarmById.clear()
+  for (const w of windFarms) windFarmById.set(w.id, w)
+
+  alarms.length = 0
+  alarms.push(...buildAlarms(turbines))
+
+  fleetTotals.installedMw = Math.round(sum(windFarms.map((w) => w.installedMw)) * 10) / 10
+  fleetTotals.turbineCount = turbines.length
+  fleetTotals.siteCount = windFarms.length
+  fleetTotals.customerCount = new Set(windFarms.map((w) => w.customerId)).size
+
+  for (const hook of rebuildHooks) hook()
+}

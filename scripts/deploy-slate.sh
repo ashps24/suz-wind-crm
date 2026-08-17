@@ -26,6 +26,8 @@ echo "▸ release ${RELEASE}"
 
 # The document bakes this in; version.json below advertises it.
 export NEXT_PUBLIC_RELEASE="${RELEASE}"
+# Wind farm registry the frontend reads and writes through.
+export NEXT_PUBLIC_WINDFARMS_API="https://suzlon-876513394.development.catalystserverless.com/server/windfarms-api"
 
 rm -rf out .next
 npm run build

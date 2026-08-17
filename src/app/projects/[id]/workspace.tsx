@@ -40,6 +40,7 @@ import { api } from '@/lib/api'
 import { PROJECT_STAGES, TONE_VAR } from '@/lib/constants'
 import { fmtCrore, fmtDate, fmtMw, fmtNumber, fmtPct, fmtRelative } from '@/lib/formatters'
 import type { SiteReadinessItem } from '@/types'
+import { windFarmHref } from '@/lib/routing'
 
 const TABS = [
   { value: 'overview', label: 'Overview' },
@@ -143,7 +144,7 @@ export function ProjectWorkspace({ id }: { id: string }) {
         actions={
           p.windFarmId ? (
             <Button variant="secondary" size="sm" asChild>
-              <Link href={`/wind-farms/${p.windFarmId}`}>Open site workspace</Link>
+              <Link href={windFarmHref(p.windFarmId)}>Open site workspace</Link>
             </Button>
           ) : undefined
         }

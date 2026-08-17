@@ -17,6 +17,7 @@ import { PRODUCT_FAMILIES, TONE_VAR, TURBINE_STATUS, TURBINE_STATUS_ORDER } from
 import { fmtDate, fmtKw, fmtNumber, fmtPct, fmtRelative, fmtSpeed } from '@/lib/formatters'
 import { isOverdue } from '@/lib/formatters'
 import type { Turbine, TurbineStatus } from '@/types'
+import { turbineHref } from '@/lib/routing'
 
 const STATE_OPTIONS = [
   'Gujarat', 'Tamil Nadu', 'Rajasthan', 'Maharashtra', 'Karnataka', 'Madhya Pradesh', 'Andhra Pradesh',
@@ -246,7 +247,7 @@ export function TurbinesView() {
               rows={filtered}
               columns={columns}
               rowKey={(t) => t.id}
-              href={(t) => `/turbines/${t.id}`}
+              href={(t) => turbineHref(t.id)}
               caption="Turbine fleet with status, output, availability, health and service dates"
               defaultSort={{ key: 'health', dir: 'asc' }}
               maxHeight={720}

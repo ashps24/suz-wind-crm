@@ -33,6 +33,7 @@ import {
 } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 import type { Alarm, Project, Technician, Turbine, WeatherReading, WindFarm, WorkOrder } from '@/types'
+import { windFarmHref } from '@/lib/routing'
 
 function Metric({
   label,
@@ -183,7 +184,7 @@ export function SiteDrawer({
           title="Asset health"
           action={
             <Link
-              href={`/wind-farms/${farm.id}?tab=turbines`}
+              href={windFarmHref(farm.id, { tab: 'turbines' })}
               className="text-[11px] font-medium text-[var(--brand)] hover:underline"
             >
               All turbines
@@ -373,7 +374,7 @@ export function SiteDrawer({
 
       <footer className="shrink-0 border-t border-[var(--line)] p-3">
         <Button asChild variant="primary" className="w-full">
-          <Link href={`/wind-farms/${farm.id}`}>
+          <Link href={windFarmHref(farm.id)}>
             Open site workspace
             <ArrowSquareOut aria-hidden />
           </Link>

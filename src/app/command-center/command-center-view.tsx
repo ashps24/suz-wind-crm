@@ -53,6 +53,7 @@ import { useIsMobile, useMediaQuery, useMounted } from '@/hooks'
 import { useMapStore } from '@/stores/map-store'
 import { useUiStore } from '@/stores/ui-store'
 import { cn } from '@/lib/utils'
+import { turbineHref } from '@/lib/routing'
 
 function MapLoading() {
   return (
@@ -229,7 +230,7 @@ export function CommandCenterView() {
                 turbines={selectedTurbines.data}
                 k={k}
                 baseScale={baseScale}
-                onSelect={(id) => router.push(`/turbines/${id}`)}
+                onSelect={(id) => router.push(turbineHref(id))}
               />
             )}
             {has('wind-farms') && (
@@ -329,7 +330,7 @@ export function CommandCenterView() {
                       projects={(projects.data ?? []).filter((p) => p.windFarmId === selectedFarm.id)}
                       technicians={summary.data.fieldTeams}
                       onClose={() => selectSite(null)}
-                      onSelectTurbine={(id) => router.push(`/turbines/${id}`)}
+                      onSelectTurbine={(id) => router.push(turbineHref(id))}
                     />
                   ) : (
                     <PriorityPanel priorities={summary.data.priorities} onFocusSite={focusSite} />
@@ -476,7 +477,7 @@ export function CommandCenterView() {
                 projects={(projects.data ?? []).filter((p) => p.windFarmId === selectedFarm.id)}
                 technicians={summary.data.fieldTeams}
                 onClose={() => selectSite(null)}
-                onSelectTurbine={(id) => router.push(`/turbines/${id}`)}
+                onSelectTurbine={(id) => router.push(turbineHref(id))}
               />
             </>
           )}

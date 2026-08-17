@@ -51,6 +51,7 @@ import {
   fmtTime,
 } from '@/lib/formatters'
 import type { ComponentHealth } from '@/types'
+import { turbineHref, windFarmHref } from '@/lib/routing'
 
 const TABS = [
   { value: 'overview', label: 'Overview' },
@@ -118,7 +119,7 @@ export function TurbineTwin({ id }: { id: string }) {
         title={t.name}
         meta={
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <Link href={`/wind-farms/${t.windFarmId}`} className="inline-flex items-center gap-1 hover:text-[var(--brand)]">
+            <Link href={windFarmHref(t.windFarmId)} className="inline-flex items-center gap-1 hover:text-[var(--brand)]">
               <MapPin className="size-3.5" aria-hidden />
               {t.windFarmName}
             </Link>
@@ -149,7 +150,7 @@ export function TurbineTwin({ id }: { id: string }) {
               </Link>
             </Button>
             <Button variant="primary" size="sm" asChild>
-              <Link href={`/wind-farms/${t.windFarmId}?tab=map`}>View in site twin</Link>
+              <Link href={windFarmHref(t.windFarmId, { tab: 'map' })}>View in site twin</Link>
             </Button>
           </>
         }
@@ -350,7 +351,7 @@ export function TurbineTwin({ id }: { id: string }) {
                   {t.siblings.slice(0, 8).map((sibling) => (
                     <li key={sibling.id}>
                       <Link
-                        href={`/turbines/${sibling.id}`}
+                        href={turbineHref(sibling.id)}
                         className="flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-[var(--subtle)]"
                       >
                         <span className="min-w-0 flex-1 truncate text-[12.5px] text-[var(--ink-secondary)]">

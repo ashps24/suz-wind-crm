@@ -1,6 +1,6 @@
 import { DEMO_NOW, hoursAgo, mean, minutesAgo, sum } from '@/lib/utils'
 import { accounts } from './crm'
-import { alarms, turbines, windFarms } from './fleet'
+import { alarms, onFleetRebuild, turbines, windFarms } from './fleet'
 import { cyclones, earthquakes, environmentEvents, floodZones, tsunamiAlerts } from './environment'
 import { maintenanceSummary, technicians, workOrders } from './maintenance'
 import { projects } from './projects'
@@ -40,6 +40,26 @@ export const fleetKpis: FleetKpis = {
   co2AvoidedTonnes: Math.round(generationTodayGwh * 1000 * 0.71),
   totalTurbines: turbines.length,
 }
+
+// The KPI object above is a load-time snapshot. When the fleet is rebuilt from
+// live site records, recompute the fleet-derived figures in place — the summary
+// object references this same instance, so every reader sees the new numbers.
+onFleetRebuild(() => {
+  const nowProducing = turbines.filter((t) => t.currentPowerKw > 0)
+  const nowOffline = turbines.filter((t) => t.status === 'offline')
+  const nowCritical = alarms.filter((a) => a.severity === 'critical' || a.severity === 'high')
+  const gwhToday = Math.round(sum(windFarms.map((w) => w.generationTodayMwh)) / 100) / 10
+
+  fleetKpis.installedMw = Math.round(sum(windFarms.map((w) => w.installedMw)) * 10) / 10
+  fleetKpis.onlineMw = Math.round(sum(turbines.map((t) => t.currentPowerKw)) / 100) / 10
+  fleetKpis.availabilityPct = Math.round(mean(turbines.map((t) => t.availabilityPct)) * 10) / 10
+  fleetKpis.activeTurbines = nowProducing.length
+  fleetKpis.offlineTurbines = nowOffline.length
+  fleetKpis.criticalIncidents = nowCritical.length
+  fleetKpis.generationTodayGwh = gwhToday
+  fleetKpis.co2AvoidedTonnes = Math.round(gwhToday * 1000 * 0.71)
+  fleetKpis.totalTurbines = turbines.length
+})
 
 /* -------------------------------- AI priorities -------------------------------- */
 

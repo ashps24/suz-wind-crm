@@ -24,6 +24,7 @@ import {
 } from '@/lib/mocks/environment'
 import {
   alarms,
+  applyLiveSites,
   fleetTotals,
   getAlarmsForSite,
   getTurbine,
@@ -32,7 +33,17 @@ import {
   getWindFarm,
   turbines,
   windFarms,
+  type SiteSeed,
 } from '@/lib/mocks/fleet'
+import {
+  createSite,
+  deleteSite,
+  hasRemoteSource,
+  invalidateSites,
+  loadSites,
+  updateSite,
+  type SiteRecord,
+} from './wind-farm-source'
 import {
   getWorkOrder,
   getWorkOrdersForSite,
@@ -77,8 +88,43 @@ const FAILURE_MESSAGES = [
   'Request rejected by the API gateway — retry shortly.',
 ]
 
+/* ------------------------------ Live site records ------------------------------ */
+
+let fleetPrimed: Promise<void> | null = null
+let fleetIsLive = false
+
+/**
+ * Loads site records from the Data Store once per session and rebuilds the
+ * derived fleet from them. Every endpoint awaits this, so no screen can render
+ * seed data first and flicker to live data afterwards. If the backend is
+ * unreachable the seeds stand in, and the app behaves exactly as Phase 1 did.
+ */
+function ensureFleet(): Promise<void> {
+  if (!fleetPrimed) {
+    fleetPrimed = loadSites()
+      .then((source) => {
+        fleetIsLive = source.live
+        if (source.live) applyLiveSites(source.sites as SiteSeed[])
+      })
+      .catch(() => {})
+  }
+  return fleetPrimed
+}
+
+/** After a write, refetch the registry and rebuild the derived fleet. */
+async function refreshFleet(): Promise<void> {
+  invalidateSites()
+  fleetPrimed = null
+  await ensureFleet()
+}
+
+export function isFleetLive() {
+  return fleetIsLive
+}
+
 /** Wraps a value in a simulated round trip. */
 async function respond<T>(value: T | (() => T), minMs = 140, maxMs = 420): Promise<T> {
+  await ensureFleet()
   requestCounter++
   await delay(minMs + Math.round((maxMs - minMs) * ((requestCounter * 37) % 100) / 100))
   if (faultInjection && requestCounter % 7 === 0) {
@@ -106,6 +152,33 @@ export const api = {
   windFarms: {
     list: () => respond(windFarms, 160, 380),
     detail: (id: string) => respondOr404(getWindFarm(id), 'Wind farm'),
+    /**
+     * Writes go to the Data Store through the windfarms-api function, then the
+     * derived fleet is rebuilt so the new site exists everywhere at once.
+     */
+    create: async (input: SiteRecord) => {
+      if (!hasRemoteSource) {
+        throw new MockApiError('This build has no wind farm registry configured — creates are disabled.', 501)
+      }
+      const site = await createSite(input)
+      await refreshFleet()
+      return site
+    },
+    update: async (id: string, input: Partial<SiteRecord>) => {
+      if (!hasRemoteSource) {
+        throw new MockApiError('This build has no wind farm registry configured — edits are disabled.', 501)
+      }
+      const site = await updateSite(id, input)
+      await refreshFleet()
+      return site
+    },
+    remove: async (id: string) => {
+      if (!hasRemoteSource) {
+        throw new MockApiError('This build has no wind farm registry configured — deletes are disabled.', 501)
+      }
+      await deleteSite(id)
+      await refreshFleet()
+    },
     turbines: (id: string) => respond(() => getTurbinesForSite(id)),
     alarms: (id: string) => respond(() => getAlarmsForSite(id)),
     workOrders: (id: string) => respond(() => getWorkOrdersForSite(id)),

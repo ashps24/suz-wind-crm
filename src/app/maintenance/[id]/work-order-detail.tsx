@@ -23,6 +23,7 @@ import { CardGridSkeleton, EmptyState, ErrorState } from '@/components/feedback/
 import { api } from '@/lib/api'
 import { TONE_VAR, WORK_ORDER_TYPE } from '@/lib/constants'
 import { fmtDate, fmtDateTime, fmtDuration, fmtMwh, fmtNumber, fmtRelative, isOverdue } from '@/lib/formatters'
+import { turbineHref, windFarmHref } from '@/lib/routing'
 
 export function WorkOrderDetail({ id }: { id: string }) {
   const order = useQuery({ queryKey: ['work-orders', id], queryFn: () => api.workOrders.detail(id) })
@@ -70,12 +71,12 @@ export function WorkOrderDetail({ id }: { id: string }) {
         title={w.title}
         meta={
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <Link href={`/turbines/${w.turbineId}`} className="inline-flex items-center gap-1 hover:text-[var(--brand)]">
+            <Link href={turbineHref(w.turbineId)} className="inline-flex items-center gap-1 hover:text-[var(--brand)]">
               <Wind className="size-3.5" aria-hidden />
               {w.turbineName}
             </Link>
             <span aria-hidden>·</span>
-            <Link href={`/wind-farms/${w.windFarmId}`} className="hover:text-[var(--brand)]">
+            <Link href={windFarmHref(w.windFarmId)} className="hover:text-[var(--brand)]">
               {w.windFarmName}
             </Link>
             <span aria-hidden>·</span>
@@ -380,7 +381,7 @@ export function WorkOrderDetail({ id }: { id: string }) {
                   ))}
                 </dl>
                 <Button variant="secondary" size="sm" className="mt-3 w-full" asChild>
-                  <Link href={`/turbines/${w.turbineId}`}>Open turbine twin</Link>
+                  <Link href={turbineHref(w.turbineId)}>Open turbine twin</Link>
                 </Button>
               </CardContent>
             </Card>

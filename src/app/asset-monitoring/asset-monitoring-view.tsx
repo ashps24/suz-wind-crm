@@ -16,6 +16,7 @@ import { api } from '@/lib/api'
 import { TONE_VAR, TURBINE_STATUS } from '@/lib/constants'
 import { fmtDateShort, fmtGwh, fmtKw, fmtNumber, fmtPct } from '@/lib/formatters'
 import { daysAgo } from '@/lib/utils'
+import { turbineHref, windFarmHref } from '@/lib/routing'
 
 export function AssetMonitoringView() {
   const health = useQuery({ queryKey: ['monitoring', 'fleet-health'], queryFn: api.monitoring.fleetHealth })
@@ -181,7 +182,7 @@ export function AssetMonitoringView() {
                 <DataTable
                   rows={data.siteComparison}
                   rowKey={(s) => s.siteId}
-                  href={(s) => `/wind-farms/${s.siteId}`}
+                  href={(s) => windFarmHref(s.siteId)}
                   caption="Availability, plant load factor and capacity by site"
                   defaultSort={{ key: 'availability', dir: 'desc' }}
                   columns={[
@@ -306,7 +307,7 @@ export function AssetMonitoringView() {
                 <DataTable
                   rows={rows}
                   rowKey={(r) => r.turbine.id}
-                  href={(r) => `/turbines/${r.turbine.id}?tab=performance`}
+                  href={(r) => turbineHref(r.turbine.id, { tab: 'performance' })}
                   caption="Turbines producing below their expected power curve"
                   defaultSort={{ key: 'deficit', dir: 'desc' }}
                   columns={[

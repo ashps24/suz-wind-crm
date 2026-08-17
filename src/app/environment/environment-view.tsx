@@ -59,6 +59,7 @@ import {
   fmtTemp,
 } from '@/lib/formatters'
 import type { Cyclone, EarthquakeEvent } from '@/types'
+import { windFarmHref } from '@/lib/routing'
 
 export function EnvironmentView() {
   const searchParams = useSearchParams()
@@ -210,7 +211,7 @@ export function EnvironmentView() {
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <Link
-                            href={`/wind-farms/${reading.windFarmId}?tab=environment`}
+                            href={windFarmHref(reading.windFarmId, { tab: 'environment' })}
                             className="truncate text-[13.5px] font-semibold text-[var(--ink)] hover:text-[var(--brand)]"
                           >
                             {reading.windFarmName}
@@ -411,7 +412,7 @@ export function EnvironmentView() {
                             {alert.coastalSiteIds.map((siteId) => {
                               const farm = farms.data?.find((f) => f.id === siteId)
                               return (
-                                <Link key={siteId} href={`/wind-farms/${siteId}`}>
+                                <Link key={siteId} href={windFarmHref(siteId)}>
                                   <Chip className="hover:border-[var(--brand)]">{farm?.name ?? siteId}</Chip>
                                 </Link>
                               )
@@ -579,7 +580,7 @@ export function EnvironmentView() {
                           {zone.affectedSiteIds.map((siteId) => {
                             const farm = farms.data?.find((f) => f.id === siteId)
                             return (
-                              <Link key={siteId} href={`/wind-farms/${siteId}`}>
+                              <Link key={siteId} href={windFarmHref(siteId)}>
                                 <Chip className="hover:border-[var(--brand)]">{farm?.name ?? siteId}</Chip>
                               </Link>
                             )
@@ -734,7 +735,7 @@ function CycloneCard({
             </p>
             <div className="flex flex-wrap gap-1.5">
               {impacted.map((farm) => (
-                <Link key={farm.id} href={`/wind-farms/${farm.id}`}>
+                <Link key={farm.id} href={windFarmHref(farm.id)}>
                   <Chip className="hover:border-[var(--brand)]">
                     {farm.name} · {fmtNumber(farm.installedMw, 0)} MW
                   </Chip>
@@ -790,7 +791,7 @@ function EarthquakeCard({ quake, highlighted }: { quake: EarthquakeEvent; highli
 
         <p className="mt-3 text-[12px] text-[var(--ink-muted)]">
           Nearest monitored asset:{' '}
-          <Link href={`/wind-farms/${quake.nearestWindFarmId}`} className="font-medium text-[var(--brand)] hover:underline">
+          <Link href={windFarmHref(quake.nearestWindFarmId)} className="font-medium text-[var(--brand)] hover:underline">
             {quake.nearestWindFarmName}
           </Link>
         </p>
