@@ -7,14 +7,88 @@ An AI-powered **Renewable Energy Operations Platform** for the wind energy lifec
 > commissioned, endorsed or reviewed by Suzlon Energy Ltd. or any subsidiary, and it
 > contains none of their data, systems, branding or intellectual property.
 
-> **Phase 1 — frontend only.** There is no backend, database, authentication, payment, or real SCADA / GIS / weather / seismic / grid integration. Every figure is generated locally from deterministic seeds. Product references (S120, S133, S144) and all company, site and person names are realistic demo data for this prototype, not sourced corporate facts.
+> **Wind farms are real records; everything else is generated.** Sites live in a
+> Catalyst Data Store table and are created and edited through the app. Turbines,
+> alarms, work orders, telemetry, weather, projects, accounts and documents are
+> still derived deterministically from each site's seed values — there is no
+> authentication, no payment, and no real SCADA / GIS / weather / seismic / grid
+> integration. Product references (S120, S133, S144) and all company, site and
+> person names are demo data, not sourced corporate facts.
+
+**Live (Development environment):** https://suzlon-wind-crm-irdbbdrk.onslate.com
 
 ```bash
 npm install
-npm run dev      # http://localhost:4310
-npm run build    # production build
+npm run dev                    # http://localhost:4310 — see the caveat below
+npm run build                  # static export to out/
 npm run typecheck
+
+./scripts/deploy-slate.sh      # build + deploy the frontend
+./scripts/deploy-function.sh   # deploy the registry API
 ```
+
+> **Local dev reads the seeds, not the database.** Catalyst only honours CORS for
+> whitelisted origins, and `localhost` is not honoured even when registered, so
+> the browser's fetch is refused and `wind-farm-source.ts` falls back to the
+> bundled seeds. The app looks and behaves correctly; it just isn't live. The
+> deployed origin works. `catalyst serve` is the documented way to get a
+> same-origin proxy locally — untested here.
+
+## Data model
+
+One table is the unit of truth, and everything else hangs off it:
+
+```
+WindFarms (Catalyst Data Store, 22 columns)
+   │
+   ├── windfarms-api          Advanced I/O function — CRUD over ZCQL
+   │                          GET public · POST/PUT/DELETE need the operator key
+   │
+   └── lib/api/wind-farm-source.ts     the single seam; falls back to seeds
+          │                            whenever the registry is unreachable
+          └── applyLiveSites()  rebuilds turbines, alarms, work orders,
+                                telemetry, KPIs and map markers in place
+```
+
+Generation is seeded by site id, so the fifteen sites compiled into the build
+render byte-identical whether they come from the seeds or the database. Only
+records you actually add or change move the numbers.
+
+**Adding a site** (Wind Farms → *New wind farm*) writes a row, rebuilds the fleet
+and puts a marker on the India map, with its turbines, alarms and digital twins
+generated from `turbineCount`, `products`, `bearingDeg` and `stress`.
+
+### Writes need an operator key
+
+The frontend is a public static bundle and so cannot hold a secret. Reads are
+open; writes require an `x-operator-key` header matching `OPERATOR_KEY` in the
+function's environment. The key is never committed and never shipped in the
+bundle — it lives in a gitignored `.secrets.env`, is injected into
+`catalyst-config.json` at deploy time and restored immediately after:
+
+```bash
+echo 'OPERATOR_KEY=<your key>' > .secrets.env   # gitignored
+./scripts/deploy-function.sh
+```
+
+If `OPERATOR_KEY` is unset on the server the API fails closed — read-only —
+rather than treating "no key" as "no key required".
+
+### Fresh clone
+
+`catalyst.json` and `.catalystrc` are gitignored (absolute paths and per-machine
+org/project ids), so a new clone has no Catalyst binding. Re-create it with
+`catalyst init --org <id>`, then `catalyst slate:link --source $(pwd)/out -ni`.
+
+**No point-in-time restore.** Snapshot before anything destructive:
+
+```bash
+./scripts/backup-windfarms.sh    # -> backups/windfarms-<stamp>.json (gitignored)
+```
+
+`catalyst ds:export` prompts before downloading and so cannot run unattended,
+which is why this reads the GET endpoint instead. Snapshots are in the SiteSeed
+shape, so a lost row can be POSTed straight back with an operator key.
 
 ---
 
@@ -78,7 +152,16 @@ src/
 
 **Data flow.** Every screen reads through `lib/api`, which mimics a network call: async, with simulated latency and an optional fault-injection mode (Administration → Display) that fails roughly one in seven requests so the error and retry states are reachable on demand. TanStack Query handles caching, loading and error states; Zustand holds UI and map state.
 
-**Determinism.** All mock data comes from seeded PRNGs and a fixed demo clock (`DEMO_NOW`), so the server and client render byte-identical output and figures stay stable between reloads. 15 sites, 522 turbines, ~170 work orders, 10 projects, 8 accounts, 18 contacts, 12 opportunities and ~150 documents are generated at module load.
+**Determinism.** Generated data comes from seeded PRNGs and a fixed demo clock
+(`DEMO_NOW`), so figures stay stable between reloads and the fifteen bundled sites
+render identically whether they come from the seeds or the database. Turbines,
+alarms, work orders, telemetry, projects, accounts, contacts, opportunities and
+documents are all derived at module load; wind farm rows are fetched.
+
+**Never fetch during server rendering.** A server-side fetch is not subject to
+CORS, so it would succeed where the browser's is refused — the two would render
+different fleets and React would fail hydration. Prerendering always uses the
+seeds; the browser upgrades to live records after mount.
 
 ---
 

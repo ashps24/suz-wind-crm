@@ -31,14 +31,61 @@ function fromSeeds(): SiteSource {
 let cache: SiteSource | null = null
 let inflight: Promise<SiteSource> | null = null
 
+/**
+ * The operator key that authorises writes.
+ *
+ * Deliberately NOT bundled — a public static build cannot keep a secret. The
+ * operator pastes it once and it is held in this browser only, so the demo stays
+ * readable by anyone while the registry stays writable only by someone who has
+ * been given the key.
+ */
+const KEY_STORAGE = 'suzlon:operator-key'
+
+export function getOperatorKey(): string {
+  if (typeof window === 'undefined') return ''
+  try {
+    return window.localStorage.getItem(KEY_STORAGE) ?? ''
+  } catch {
+    return ''
+  }
+}
+
+export function setOperatorKey(key: string) {
+  try {
+    if (key) window.localStorage.setItem(KEY_STORAGE, key)
+    else window.localStorage.removeItem(KEY_STORAGE)
+  } catch {
+    // Private browsing — the key simply will not persist.
+  }
+}
+
+/** Thrown when the server refuses a write for want of a valid key. */
+export class OperatorKeyError extends Error {
+  constructor(message = 'An operator key is required to change the wind farm registry.') {
+    super(message)
+    this.name = 'OperatorKeyError'
+  }
+}
+
 async function request(path: string, init?: RequestInit) {
   if (!BASE) throw new Error('No wind farm API configured')
-  const res = await fetch(`${BASE}${path}`, {
-    ...init,
-    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
-  })
+
+  const writing = Boolean(init?.method) && init!.method !== 'GET'
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...((init?.headers as Record<string, string>) ?? {}),
+  }
+  if (writing) {
+    const key = getOperatorKey()
+    if (key) headers['x-operator-key'] = key
+  }
+
+  const res = await fetch(`${BASE}${path}`, { ...init, headers })
   const body = await res.json().catch(() => ({}))
   if (!res.ok) {
+    if (res.status === 401 || body?.code === 'OPERATOR_KEY_REQUIRED') {
+      throw new OperatorKeyError(body?.error)
+    }
     const detail = Array.isArray(body?.errors) ? body.errors.join('; ') : body?.error
     throw new Error(detail || `Request failed with ${res.status}`)
   }

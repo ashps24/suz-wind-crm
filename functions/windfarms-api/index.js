@@ -40,6 +40,35 @@ app.use((req, res, next) => {
   next()
 })
 
+/**
+ * Reads are public; writes need the operator key.
+ *
+ * The frontend is a public static bundle, so it cannot hold a secret — anything
+ * shipped in the JS is readable by anyone. The key therefore lives only in this
+ * function's environment and in the operator's own browser after they enter it
+ * once. That keeps the demo viewable by anyone while making the registry
+ * writable only by someone who has been given the key.
+ */
+app.use((req, res, next) => {
+  if (req.method === 'GET' || req.method === 'OPTIONS') return next()
+
+  const expected = process.env.OPERATOR_KEY
+  if (!expected) {
+    // Fail closed: an unset key must not mean "no key required".
+    return res.status(503).json({
+      error: 'Registry is read-only — no operator key is configured on the server.',
+    })
+  }
+  const provided = req.headers['x-operator-key']
+  if (provided !== expected) {
+    return res.status(401).json({
+      error: 'An operator key is required to change the wind farm registry.',
+      code: 'OPERATOR_KEY_REQUIRED',
+    })
+  }
+  next()
+})
+
 /* ------------------------------- mapping -------------------------------- */
 
 const NUM = (v, fallback = 0) => {

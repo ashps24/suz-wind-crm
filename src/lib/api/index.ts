@@ -1,10 +1,15 @@
 /* ------------------------------------------------------------------ *
- * Mock API layer
+ * API layer
  *
- * Frontend-only. Every function mimics a network call: it resolves
- * asynchronously with simulated latency and, when fault injection is
- * enabled, fails often enough to exercise the error states for real.
- * There is no server, no database and no authentication in Phase 1.
+ * One seam for every screen. Wind farm records are real — they come from
+ * a Catalyst Data Store table via the windfarms-api function, and writes
+ * need an operator key. Everything else (turbines, alarms, work orders,
+ * telemetry, projects, CRM, documents) is derived from those site records
+ * and resolves through a simulated round trip: async, with latency and an
+ * optional fault-injection mode that exercises the error states for real.
+ *
+ * There is still no authentication or authorisation for users; the role
+ * switcher is presentation state only.
  * ------------------------------------------------------------------ */
 
 import { delay } from '@/lib/utils'
@@ -43,6 +48,13 @@ import {
   loadSites,
   updateSite,
   type SiteRecord,
+} from './wind-farm-source'
+
+export {
+  getOperatorKey,
+  setOperatorKey,
+  OperatorKeyError,
+  hasRemoteSource,
 } from './wind-farm-source'
 import {
   getWorkOrder,

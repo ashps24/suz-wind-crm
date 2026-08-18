@@ -18,3 +18,9 @@ catalyst-debug.log
 
 # Chunks from previous Slate releases, merged forward at deploy time
 .slate-static-archive
+
+# Local-only secrets injected at deploy time — never committed
+.secrets.env
+
+# Dated registry snapshots — regenerate with scripts/backup-windfarms.sh
+backups/

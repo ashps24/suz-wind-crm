@@ -10,7 +10,7 @@ import { CheckCircle, MapPin, Plus, Warning } from '@phosphor-icons/react/dist/s
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Input, Label, Select } from '@/components/ui/primitives'
-import { api, MockApiError } from '@/lib/api'
+import { api, MockApiError, OperatorKeyError, getOperatorKey, setOperatorKey } from '@/lib/api'
 import { accounts } from '@/lib/mocks/crm'
 import { PRODUCT_FAMILIES, TONE_VAR } from '@/lib/constants'
 import { windFarmHref } from '@/lib/routing'
@@ -73,6 +73,9 @@ function Field({ label, error, children, className }: {
 export function NewWindFarmButton() {
   const [open, setOpen] = React.useState(false)
   const [created, setCreated] = React.useState<string | null>(null)
+  // Set only when the server refuses the write for want of a valid key.
+  const [needsKey, setNeedsKey] = React.useState(false)
+  const [keyDraft, setKeyDraft] = React.useState('')
   const router = useRouter()
   const queryClient = useQueryClient()
 
@@ -121,15 +124,32 @@ export function NewWindFarmButton() {
     onSuccess: async (site) => {
       // Everything derives from sites, so every fleet-shaped query is stale now.
       await queryClient.invalidateQueries()
+      setNeedsKey(false)
       setCreated(site.id)
+    },
+    onError: (err) => {
+      if (err instanceof OperatorKeyError) {
+        setKeyDraft(getOperatorKey())
+        setNeedsKey(true)
+      }
     },
   })
 
   function close() {
     setOpen(false)
     setCreated(null)
+    setNeedsKey(false)
+    setKeyDraft('')
     create.reset()
     form.reset()
+  }
+
+  /** Stores the key, then retries the submission that was refused. */
+  function saveKeyAndRetry() {
+    setOperatorKey(keyDraft.trim())
+    setNeedsKey(false)
+    create.reset()
+    void form.handleSubmit((values) => create.mutate(values))()
   }
 
   return (
@@ -254,7 +274,35 @@ export function NewWindFarmButton() {
                 </Select>
               </Field>
 
-              {create.isError && (
+              {needsKey ? (
+                <div
+                  className="space-y-2 rounded-lg px-3.5 py-3 sm:col-span-2"
+                  style={{ backgroundColor: 'var(--status-warning-soft)' }}
+                  role="alert"
+                >
+                  <p className="flex items-center gap-2 text-[12.5px] font-semibold text-[var(--ink)]">
+                    <Warning className="size-4 shrink-0" style={{ color: TONE_VAR.warning }} weight="fill" aria-hidden />
+                    An operator key is needed to write to the registry
+                  </p>
+                  <p className="text-[11.5px] leading-relaxed text-[var(--ink-secondary)]">
+                    Reads are public; changes are not. The key is stored in this browser only — it is never
+                    part of the published build.
+                  </p>
+                  <div className="flex gap-2 pt-0.5">
+                    <Input
+                      type="password"
+                      value={keyDraft}
+                      onChange={(e) => setKeyDraft(e.target.value)}
+                      placeholder="Operator key"
+                      aria-label="Operator key"
+                      autoComplete="off"
+                    />
+                    <Button type="button" variant="primary" size="sm" disabled={!keyDraft.trim()} onClick={saveKeyAndRetry}>
+                      Save &amp; retry
+                    </Button>
+                  </div>
+                </div>
+              ) : create.isError ? (
                 <p
                   className="flex items-start gap-2 rounded-lg px-3 py-2.5 text-[12.5px] sm:col-span-2"
                   style={{ backgroundColor: 'var(--status-critical-soft)', color: TONE_VAR.critical }}
@@ -265,7 +313,7 @@ export function NewWindFarmButton() {
                     ? create.error.message
                     : 'The site could not be created.'}
                 </p>
-              )}
+              ) : null}
 
               <div className="flex justify-end gap-2 border-t border-[var(--line)] pt-4 sm:col-span-2">
                 <Button type="button" variant="secondary" size="sm" onClick={close}>
